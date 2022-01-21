@@ -2,37 +2,26 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"io"
+	"log"
 	"net/http"
 
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
-/*
-	oauth2란?
-	구글, 페이스북, 카카오 등에서 제공하는 인증 서버를 통해
-	회원 정보를 인증하고 Access Token을 발급받기 위한 표준 프로토콜
-
-	발급받은 Access Token을 이용하여 인증 받은 곳(구글, 페이스북, 카카오 등)
-	의 API 서비스를 이용할 수 있게 됩니다.
-*/
-
-/*
-	oauth2 용어
-
-	Resource owner : Resource server로 부터 계정을 소유하고 있는 사용자를 의미합니다.
-
-	Client : 구글, 페이스북, 카카오 등의 API 서비스를 이용하는 제 3의 서비스를 의미합니다.
-
-	Authorization Server(권한 서버) : 권한을 관리해주는 서버, Access
-*/
 const (
 	authServerURL = "http://localhost:8080"
 )
 
 /*
 	config 각 변수 역할
-	ClientID : OAuth client
+	ClientID : OAuth client id
+	ClientSecret : OAuth Client Secret
 */
 var (
 	config = oauth2.Config{
@@ -47,6 +36,11 @@ var (
 	}
 	globalToken *oauth2.Token
 )
+
+func genCodeChallengeS256(s string) string {
+	s256 := sha256.Sum256([]byte(s))
+	return base64.URLEncoding.EncodeToString(s256[:])
+}
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -76,6 +70,47 @@ func main() {
 		globalToken = token
 
 		e := json.NewEncoder(w)
-		e.SetIndent
+		e.SetIndent("", " ")
+		e.Encode(token)
 	})
+	http.HandleFunc("/try", func(w http.ResponseWriter, r *http.Request) {
+		if globalToken == nil {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+		resp, err := http.Get(fmt.Sprintf("%s/test?access_token=%s", authServerURL, globalToken.AccessToken))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		defer resp.Body.Close()
+		io.Copy(w, resp.Body)
+	})
+	http.HandleFunc("/pwd", func(w http.ResponseWriter, r *http.Request) {
+		token, err := config.PasswordCredentialsToken(context.Background(), "test", "test")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		globalToken = token
+		e := json.NewEncoder(w)
+		e.SetIndent("", " ")
+	})
+	http.HandleFunc("/client", func(w http.ResponseWriter, r *http.Request) {
+		cfg := clientcredentials.Config{
+			ClientID:     config.ClientID,
+			ClientSecret: config.ClientSecret,
+			TokenURL:     config.Endpoint.TokenURL,
+		}
+		token, err := cfg.Token(context.Background())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		e := json.NewEncoder(w)
+		e.SetIndent("", " ")
+		e.Encode(token)
+	})
+	log.Printf("Client is running at 8080 port.\nPlease Open %s", authServerURL)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

@@ -19,7 +19,7 @@ Authorization Server(권한 서버) : 권한을 관리해주는 서버, Access T
 
 Resource Server : OAuth 서비스를 제공하고, 자원을 관리하는 서버입니다.
 
-## OAuth의 인증방식
+## OAuth2의 인증방식
 
 1. Authorization Code Grant (권한 부여 승인 코드 방식)
 
@@ -55,6 +55,9 @@ Resource Server : OAuth 서비스를 제공하고, 자원을 관리하는 서버
 ```
 2. Implicit Grant (암묵적 승인 방식)
 
+	Authorization Code Grant에서 인증 코드 교환과정을 제외하고 바로 access token을 발급받는 방법입니다.
+
+	특별히 안전한 저장공간이 없는 JavaScript SPA(Single Page Application)에 사용하기 위해 만들어졌지만 권장되는 방식이 아닙니다.
 ```
      +----------+
      | Resource |
@@ -90,10 +93,13 @@ Resource Server : OAuth 서비스를 제공하고, 자원을 관리하는 서버
      +---------+
 ```
 
-3. Resource Owner Password Credentials Grant (자원 소유자 자격증명 승인 방식)
+3. Resource Owner Password Credentials Grant (리소스 소유자 암호 자격 증명 방식)
 
+	외부의 프로그램이나 타 사의 서비스를 접근하는 것이 아닌 본인의 서비스의 애플리케이션에서 사용하는 인증방법입니다.
+
+	사용자 이름과 비밀번호를 사용하여 access token을 얻습니다.
 ```
-   +----------+
+     +----------+
      | Resource |
      |  Owner   |
      |          |
@@ -114,6 +120,7 @@ Resource Server : OAuth 서비스를 제공하고, 자원을 관리하는 서버
 
 4. Client Credentials Grant (클라이언트 자격증명 승인 방식)
 
+	단순히 클라이언트가 인증서버로 요청을 보내면 액세스 토큰을 반환하는 방식입니다.
 ```
      +---------+                                  +---------------+
      |         |                                  |               |
@@ -146,4 +153,3 @@ Resource Server : OAuth 서비스를 제공하고, 자원을 관리하는 서버
      +--------+                               +---------------+
 ```
 
-A : 클라이언트 측에서 Resource Owner에게 인증방식
