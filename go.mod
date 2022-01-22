@@ -3,9 +3,11 @@ module github.com/zxcv9203/oauth_test
 go 1.17
 
 require (
+	github.com/go-oauth2/oauth2 v3.9.2+incompatible
 	github.com/go-oauth2/oauth2/v4 v4.4.2
-	golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d
+	github.com/go-session/session v3.1.2+incompatible
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
+	gopkg.in/oauth2.v3 v3.12.0
 )
 
 require (
@@ -20,6 +22,7 @@ require (
 	github.com/tidwall/pretty v1.0.1 // indirect
 	github.com/tidwall/rtree v0.0.0-20180113144539-6cd427091e0e // indirect
 	github.com/tidwall/tinyqueue v0.0.0-20180302190814-1e39f5511563 // indirect
+	golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 )
